@@ -21,8 +21,6 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type UserContextKey string
-
 type Handlers struct {
 	serverState *state.ServerState
 }
@@ -30,7 +28,6 @@ type Handlers struct {
 const (
 	staticPath = "static/build/"
 	indexPath = "index.html"
-	userKey = UserContextKey("userID")
 )
 
 func getFunctionName(i interface{}) string {
@@ -228,7 +225,7 @@ func JwtAuthentication (next http.Handler, state *state.ServerState, registry ma
 
 		//Everything went well, proceed with the request and set the caller to the user retrieved from the parsed token
 		fmt.Printf("User %d", tk.UserID) //Useful for monitoring
-		ctx := context.WithValue(r.Context(), userKey, tk.UserID)
+		ctx := context.WithValue(r.Context(), auth.UserKey, tk.UserID)
 		r = r.WithContext(ctx)
 		next.ServeHTTP(w, r) //proceed in the middleware chain!
 	})

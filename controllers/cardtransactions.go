@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"github.com/donohutcheon/gowebserver/models/auth"
 	"net/http"
 
 	"github.com/donohutcheon/gowebserver/controllers/errors"
@@ -17,7 +18,7 @@ func CreateCardTransaction(w http.ResponseWriter, r *http.Request, state *state.
 		return nil
 	}
 
-	userID := r.Context().Value("userID").(int64) //Grab the id of the userID that send the request
+	userID := r.Context().Value(auth.UserKey).(int64) //Grab the id of the userID that send the request
 	cardTransaction := models.NewCardTransaction(state)
 
 	err := json.NewDecoder(r.Body).Decode(cardTransaction)
@@ -62,7 +63,7 @@ func GetCardTransactions(w http.ResponseWriter, r *http.Request, state *state.Se
 		return err
 	}
 
-	userID := r.Context().Value("userID").(int64)
+	userID := r.Context().Value(auth.UserKey).(int64)
 	data, err := cardTransaction.GetCardTransactionsByUserID(userID)
 	if err != nil && err != datalayer.ErrNoData {
 		errors.WriteError(w, err, http.StatusInternalServerError)

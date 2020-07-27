@@ -3,6 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"github.com/donohutcheon/gowebserver/controllers/response/types"
+	"github.com/donohutcheon/gowebserver/models/auth"
 	"github.com/gorilla/mux"
 	"net/http"
 
@@ -48,7 +49,7 @@ func GetCurrentUser(w http.ResponseWriter, r *http.Request, state *state.ServerS
 	if r.Method == http.MethodOptions {
 		return nil
 	}
-	id := r.Context().Value("userID").(int64)
+	id := r.Context().Value(auth.UserKey).(int64)
 
 	user := models.NewUser(state)
 	err := user.GetUser(id)

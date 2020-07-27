@@ -5,6 +5,7 @@ import (
 	"github.com/donohutcheon/gowebserver/controllers/errors"
 	"github.com/donohutcheon/gowebserver/controllers/response"
 	"github.com/donohutcheon/gowebserver/models"
+	models_auth "github.com/donohutcheon/gowebserver/models/auth"
 	"github.com/donohutcheon/gowebserver/router/auth"
 	"github.com/donohutcheon/gowebserver/state"
 	"net/http"
@@ -86,7 +87,7 @@ func GetAPIToken(w http.ResponseWriter, r *http.Request, state *state.ServerStat
 		return nil
 	}
 
-	userID := r.Context().Value("userID").(int64)
+	userID := r.Context().Value(models_auth.UserKey).(int64)
 
 	user := models.NewUser(state)
 	user.ID = userID
