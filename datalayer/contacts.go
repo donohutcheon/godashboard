@@ -58,7 +58,10 @@ func (p *PersistenceDataLayer) GetContactsByUserID(userID int64) ([]*Contact, er
 
 	for rows.Next() {
 		contact := new(Contact)
-		rows.Scan(contact)
+		err := rows.Scan(contact)
+		if err != nil {
+			return nil, err
+		}
 		contacts = append(contacts, contact)
 	}
 

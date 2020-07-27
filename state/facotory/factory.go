@@ -32,22 +32,13 @@ const (
 	prod environment = 1
 )
 
-
-
-var (
-	//CertFile environment variable for CertFile
-	CertFile = os.Getenv("CERT_FILE")
-	//KeyFile environment variable for KeyFile
-	KeyFile = os.Getenv("KEY_FILE")
-)
-
 func newState(env environment, logger *log.Logger, mainThreadWG *sync.WaitGroup) (*state.ServerState, error) {
-	ctx, cancel := context.WithCancel(context.Background())
 	dataLayer, err := datalayer.New()
 	if err != nil {
 		return nil, err
 	}
 
+	ctx, cancel := context.WithCancel(context.Background())
 	s := &state.ServerState{
 		URL: os.Getenv("URL"),
 		Channels: state.Channels{

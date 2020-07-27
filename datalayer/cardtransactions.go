@@ -98,7 +98,10 @@ func (p *PersistenceDataLayer) GetCardTransactionsByUserID(userID int64, sortabl
 
 	for rows.Next() {
 		cardTransaction := new(CardTransaction)
-		rows.StructScan(cardTransaction)
+		err := rows.StructScan(cardTransaction)
+		if err != nil {
+			return nil, err
+		}
 		cardTransactions = append(cardTransactions, cardTransaction)
 	}
 

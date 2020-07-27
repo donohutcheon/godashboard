@@ -39,7 +39,7 @@ func (h *Handlers) WrapHandlerFunc(next routes.HandlerFunc) http.HandlerFunc {
 		startTime := time.Now()
 		logger := h.serverState.Logger
 		//TODO: Format time
-		defer logger.Printf("request processed in %v, %v\n", getFunctionName(next),  time.Now().Sub(startTime))
+		defer logger.Printf("request processed in %v, %v\n", getFunctionName(next),  time.Since(startTime))
 		err := next(w, r, h.serverState)
 		if err != nil {
 			logger.Printf("Controller error: %v", err)
@@ -52,7 +52,7 @@ func (h *Handlers) WrapMiddlewareFunc(next routes.MiddlewareFunc, registry map[s
 		startTime := time.Now()
 		logger := h.serverState.Logger
 		//TODO: Format time
-		defer logger.Printf("request processed in %v, %v\n", getFunctionName(next), time.Now().Sub(startTime))
+		defer logger.Printf("request processed in %v, %v\n", getFunctionName(next), time.Since(startTime))
 
 		return next(mwf, h.serverState, registry)
 	}
@@ -263,7 +263,6 @@ func (h *Handlers) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// otherwise, use http.FileServer to serve the static dir
 	http.FileServer(http.Dir(staticPath)).ServeHTTP(w, r)
-	return
 }
 
 func writeStaticWebConfig() error {

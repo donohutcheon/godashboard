@@ -35,13 +35,17 @@ func ConfirmUsersForever(state *state.ServerState) {
 			continue
 		}
 
-		to := fmt.Sprintf("%s", u.Email.String)
+		to := u.Email.String
 		toList := []string{to}
 		from := "noreply@someapp.com"
 		message := fmt.Sprintf("Hello %s,\n Welcome to this app - whatever it is.  Please confirm your registration by clicking on this link " +
 		"%s/api/users/confirm/%s", u.Email.String, state.URL, nonce)
 
-		email.SendMail(toList, from, "Welcome to this app!", message)
+		err = email.SendMail(toList, from, "Welcome to this app!", message)
+		if err != nil {
+			logger.Print("failed to send mail")
+			continue
+		}
 
 		err = dl.SetUserStateByID(u.ID, datalayer.UserStatePending)
 		if err != nil {
@@ -51,7 +55,7 @@ func ConfirmUsersForever(state *state.ServerState) {
 
 		logger.Printf("Sent confirmation email for user %s with nonce %s nonceID %d", u.Email.String, nonce, nonceID)
 	}
-	logger.Printf("ConfirmUsersForever done.")
+	logger.Print("ConfirmUsersForever done.")
 }
 
 func generateNonce(n int) string {
