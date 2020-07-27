@@ -89,10 +89,10 @@ func TestAuthenticate(t *testing.T) {
 			require.NoError(t, err)
 
 			body, err := ioutil.ReadAll(res.Body)
+			require.NoError(t, err)
 			gotResp := new(AuthResponse)
 			err = json.Unmarshal(body, gotResp)
 			require.NoError(t, err)
-
 			assert.Equal(t, test.expStatus, res.StatusCode)
 			assert.Equal(t, test.expResp.Message, gotResp.Message)
 			assert.Equal(t, test.expResp.Status, gotResp.Status)
@@ -134,6 +134,7 @@ func login(t *testing.T, ctx context.Context, cl *http.Client, url string, param
 	require.NoError(t, err)
 
 	body, err := ioutil.ReadAll(res.Body)
+	require.NoError(t, err)
 	gotAuthResp := new(AuthResponse)
 	err = json.Unmarshal(body, gotAuthResp)
 	require.NoError(t, err)
@@ -165,6 +166,7 @@ func refreshToken(t *testing.T, ctx context.Context, cl *http.Client, url string
 	require.NoError(t, err)
 
 	body, err := ioutil.ReadAll(res.Body)
+	require.NoError(t, err)
 	gotAuthResp := new(AuthResponse)
 	err = json.Unmarshal(body, gotAuthResp)
 	require.NoError(t, err)

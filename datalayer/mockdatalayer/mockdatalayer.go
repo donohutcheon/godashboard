@@ -23,7 +23,8 @@ type MockDataLayer struct {
 func New(t *testing.T) *MockDataLayer {
 	m := new(MockDataLayer)
 	m.t = t
-	m.initialize()
+	err := m.initialize()
+	require.NoError(t, err)
 	return m
 }
 

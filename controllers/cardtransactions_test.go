@@ -210,6 +210,7 @@ func createCardTransaction(t *testing.T, ctx context.Context, cl *http.Client,
 	require.NoError(t, err)
 
 	body, err := ioutil.ReadAll(res.Body)
+	require.NoError(t, err)
 	gotResp := new(CreateCardTransactionControllerResponse)
 	err = json.Unmarshal(body, gotResp)
 	require.NoError(t, err)
@@ -233,6 +234,7 @@ func getCardTransactions(t *testing.T, ctx context.Context, cl *http.Client,
 	require.NoError(t, err)
 
 	body, err := ioutil.ReadAll(res.Body)
+	require.NoError(t, err)
 	gotResp := new(GetCardTransactionControllerResponse)
 	err = json.Unmarshal(body, gotResp)
 	require.NoError(t, err)

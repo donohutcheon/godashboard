@@ -19,8 +19,8 @@ import (
 
 type Config struct {
 	Username string `json:"username"`
-	Password string `json:"password""`
-	Host string `json:"domain""`
+	Password string `json:"password"`
+	Host string `json:"domain"`
 	SMTPPorts []int `json:"smtp_ports"`
 }
 

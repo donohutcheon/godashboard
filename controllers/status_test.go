@@ -25,6 +25,7 @@ func TestGetStatus(t *testing.T) {
 	require.NoError(t, err)
 
 	body, err := ioutil.ReadAll(res.Body)
+	require.NoError(t, err)
 
 	expResp := response.New(true, "Service is up")
 	expected, err := json.Marshal(expResp)

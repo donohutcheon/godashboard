@@ -10,15 +10,6 @@ import (
 	"sync"
 )
 
-var (
-	//CertFile environment variable for CertFile
-	CertFile = os.Getenv("CERT_FILE")
-	//KeyFile environment variable for KeyFile
-	KeyFile = os.Getenv("KEY_FILE")
-	//ServiceAddress address to listen on
-
-)
-
 func main() {
 	logger := log.New(os.Stdout, "server ", log.LstdFlags|log.Lshortfile)
 

@@ -26,5 +26,6 @@ func mailCallback(t *testing.T, ctx context.Context, to []string, from, subject,
 	require.NoError(t, err)
 
 	body, err := ioutil.ReadAll(res.Body)
+	require.NoError(t, err)
 	fmt.Println("Confirmation response body: ", string(body))
 }

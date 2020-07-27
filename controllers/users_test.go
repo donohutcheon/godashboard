@@ -51,6 +51,7 @@ func getCurrentUser(t *testing.T, ctx context.Context, cl *http.Client,
 	require.NoError(t, err)
 
 	body, err := ioutil.ReadAll(res.Body)
+	require.NoError(t, err)
 	gotResp := new(UserControllerResponse)
 	err = json.Unmarshal(body, gotResp)
 	require.NoError(t, err)
@@ -83,6 +84,7 @@ func createUser(t *testing.T, ctx context.Context, cl *http.Client,
 	require.NoError(t, err)
 
 	body, err := ioutil.ReadAll(res.Body)
+	require.NoError(t, err)
 	gotCreateUserResp := new(UserControllerResponse)
 	err = json.Unmarshal(body, gotCreateUserResp)
 	require.NoError(t, err)

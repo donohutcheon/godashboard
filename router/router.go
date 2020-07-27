@@ -21,14 +21,17 @@ import (
 	"github.com/gorilla/mux"
 )
 
-const (
-	staticPath = "static/build/"
-	indexPath = "index.html"
-)
+type UserContextKey string
 
 type Handlers struct {
 	serverState *state.ServerState
 }
+
+const (
+	staticPath = "static/build/"
+	indexPath = "index.html"
+	userKey = UserContextKey("userID")
+)
 
 func getFunctionName(i interface{}) string {
 	return runtime.FuncForPC(reflect.ValueOf(i).Pointer()).Name()
@@ -62,7 +65,7 @@ func (h *Handlers) WrapMiddlewareFunc(next routes.MiddlewareFunc, registry map[s
 func (h *Handlers) SetupRoutes(router *mux.Router) error {
 	err := writeStaticWebConfig()
 	if err != nil {
-
+		return err
 	}
 
 	registry := routes.GetRouteRegistry()
@@ -225,7 +228,7 @@ func JwtAuthentication (next http.Handler, state *state.ServerState, registry ma
 
 		//Everything went well, proceed with the request and set the caller to the user retrieved from the parsed token
 		fmt.Printf("User %d", tk.UserID) //Useful for monitoring
-		ctx := context.WithValue(r.Context(), "userID", tk.UserID)
+		ctx := context.WithValue(r.Context(), userKey, tk.UserID)
 		r = r.WithContext(ctx)
 		next.ServeHTTP(w, r) //proceed in the middleware chain!
 	})

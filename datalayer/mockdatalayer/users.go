@@ -41,12 +41,12 @@ func (m *MockDataLayer) getNextUserID() int64 {
 }
 
 func (m *MockDataLayer) CreateUser(email, password string) (int64, error){
-	user, err := m.GetUserByEmail(email)
+	_, err := m.GetUserByEmail(email)
 	if err != datalayer.ErrNoData {
 		return 0, err
 	}
 
-	user = &datalayer.User{
+	user := &datalayer.User{
 		Model:    datalayer.Model{
 			ID:        m.getNextUserID(),
 			CreatedAt: datalayer.JsonNullTime{
