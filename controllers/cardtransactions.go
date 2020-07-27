@@ -23,7 +23,11 @@ func CreateCardTransaction(w http.ResponseWriter, r *http.Request, state *state.
 	err := json.NewDecoder(r.Body).Decode(cardTransaction)
 	if err != nil {
 		resp := response.New(false, "Error while decoding request body")
-		resp.Respond(w)
+		errResp := resp.Respond(w)
+		if errResp != nil {
+			return errResp
+		}
+
 		errors.WriteError(w, err, http.StatusBadRequest)
 		return err
 	}
@@ -38,9 +42,7 @@ func CreateCardTransaction(w http.ResponseWriter, r *http.Request, state *state.
 	resp := response.New(true, "success")
 	resp.Set("cardTransaction", data)
 
-	resp.Respond(w)
-
-	return nil
+	return resp.Respond(w)
 }
 
 func GetCardTransactions(w http.ResponseWriter, r *http.Request, state *state.ServerState) error {
@@ -70,7 +72,5 @@ func GetCardTransactions(w http.ResponseWriter, r *http.Request, state *state.Se
 	resp := response.New(true, "success")
 	resp.Set("cardTransactions", data)
 
-	resp.Respond(w)
-
-	return nil
+	return resp.Respond(w)
 }

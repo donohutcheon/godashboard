@@ -43,7 +43,10 @@ func WriteError(w http.ResponseWriter, err error, defaultStatusCode ...int) {
 	if err, ok := err.(*ControllerError); ok {
 		resp := response.NewWithFieldsList(false, err.ErrorMessage, err.Fields)
 		w.WriteHeader(err.StatusCode)
-		resp.Respond(w)
+		err := resp.Respond(w)
+		if err != nil {
+			fmt.Println(err)
+		}
 		return
 	}
 
@@ -54,5 +57,9 @@ func WriteError(w http.ResponseWriter, err error, defaultStatusCode ...int) {
 
 	resp := response.New(false, err.Error())
 	w.WriteHeader(statusCode)
-	resp.Respond(w)
+
+	err = resp.Respond(w)
+	if err != nil {
+		fmt.Println(err)
+	}
 }

@@ -33,9 +33,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request, state *state.ServerState
 
 	resp := response.New(true, "User has been created")
 	resp.Set("user", data)
-	resp.Respond(w)
-
-	return nil
+	return resp.Respond(w)
 }
 
 // TODO: Move into usersController
@@ -64,12 +62,7 @@ func GetCurrentUser(w http.ResponseWriter, r *http.Request, state *state.ServerS
 	resp := response.New(true, "success")
 	resp.Set("user", user)
 
-	err = resp.Respond(w)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return resp.Respond(w)
 }
 
 func ConfirmUserSignUp(w http.ResponseWriter, r *http.Request, state *state.ServerState) error {
@@ -114,7 +107,6 @@ func ConfirmUserSignUp(w http.ResponseWriter, r *http.Request, state *state.Serv
 	}
 
 	resp := response.New(true, "User's email has been confirmed")
-	resp.Respond(w)
 
-	return nil
+	return resp.Respond(w)
 }

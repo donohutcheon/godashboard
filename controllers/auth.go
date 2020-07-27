@@ -37,9 +37,7 @@ func Authenticate(w http.ResponseWriter, r *http.Request, state *state.ServerSta
 
 	resp := response.New(true, "Logged In")
 	resp["token"] = data
-	resp.Respond(w)
-
-	return nil
+	return resp.Respond(w)
 }
 
 func RefreshToken(w http.ResponseWriter, r *http.Request, state *state.ServerState) error {
@@ -73,9 +71,8 @@ func RefreshToken(w http.ResponseWriter, r *http.Request, state *state.ServerSta
 
 	resp := response.New(true, "Tokens refreshed")
 	resp.Set("token", data)
-	resp.Respond(w)
 
-	return nil
+	return resp.Respond(w)
 }
 
 func GetAPIToken(w http.ResponseWriter, r *http.Request, state *state.ServerState) error {
@@ -100,7 +97,6 @@ func GetAPIToken(w http.ResponseWriter, r *http.Request, state *state.ServerStat
 
 	resp := response.New(true, "Logged In")
 	resp["token"] = data
-	resp.Respond(w)
 
-	return nil
+	return resp.Respond(w)
 }

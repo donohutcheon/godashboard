@@ -101,6 +101,7 @@ func NewHandlers(state *state.ServerState) *Handlers {
 }
 
 func JwtAuthentication (next http.Handler, state *state.ServerState, registry map[string]routes.RouteEntry) http.Handler {
+	logger := state.Logger
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("X-FRAME-OPTIONS", "SAMEORIGIN")
@@ -157,7 +158,10 @@ func JwtAuthentication (next http.Handler, state *state.ServerState, registry ma
 			resp := response.New(false, "Internal server error.  Routing failed")
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Header().Add("Content-Type", "application/json")
-			resp.Respond(w)
+			err := resp.Respond(w)
+			if err != nil {
+				logger.Println(err)
+			}
 			return
 		}
 		if isPublicMatch {
@@ -170,7 +174,10 @@ func JwtAuthentication (next http.Handler, state *state.ServerState, registry ma
 			resp := response.New(false, "Missing auth token")
 			w.WriteHeader(http.StatusForbidden)
 			w.Header().Add("Content-Type", "application/json")
-			resp.Respond(w)
+			err := resp.Respond(w)
+			if err != nil {
+				logger.Println(err)
+			}
 			return
 		}
 
@@ -179,7 +186,10 @@ func JwtAuthentication (next http.Handler, state *state.ServerState, registry ma
 			resp := response.New(false, "Invalid/Malformed auth token")
 			w.WriteHeader(http.StatusForbidden)
 			w.Header().Add("Content-Type", "application/json")
-			resp.Respond(w)
+			err := resp.Respond(w)
+			if err != nil {
+				logger.Println(err)
+			}
 			return
 		}
 
@@ -195,7 +205,10 @@ func JwtAuthentication (next http.Handler, state *state.ServerState, registry ma
 			resp := response.New(false, message)
 			w.WriteHeader(http.StatusForbidden)
 			w.Header().Add("Content-Type", "application/json")
-			resp.Respond(w)
+			err := resp.Respond(w)
+			if err != nil {
+				logger.Println(err)
+			}
 			return
 		}
 
@@ -203,7 +216,10 @@ func JwtAuthentication (next http.Handler, state *state.ServerState, registry ma
 			resp := response.New(false, "Token is not valid.")
 			w.WriteHeader(http.StatusForbidden)
 			w.Header().Add("Content-Type", "application/json")
-			resp.Respond(w)
+			err := resp.Respond(w)
+			if err != nil {
+				logger.Println(err)
+			}
 			return
 		}
 

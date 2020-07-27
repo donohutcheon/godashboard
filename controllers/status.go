@@ -16,6 +16,5 @@ func Status(w http.ResponseWriter, r *http.Request, state *state.ServerState) er
 	//w.Header().Set("Sec-Fetch-Site", "same-site")
 
 	resp := response.New(true, "Service is up")
-	resp.Respond(w)
-	return nil
+	return resp.Respond(w)
 }
