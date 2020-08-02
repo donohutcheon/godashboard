@@ -11,7 +11,7 @@ RUN find . -name "godashboard"
 FROM node:alpine AS node_builder
 
 COPY --from=go_builder /go/src/static /static
-RUN find /go/src/static | grep -v "node_modules"
+RUN find /static | grep -v "node_modules"
 WORKDIR /static
 RUN npm install
 RUN npm run build
