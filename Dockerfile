@@ -1,4 +1,4 @@
-FROM heroku/heroku:18-build as build
+FROM golang:stable as build
 
 COPY . /app
 WORKDIR /app
