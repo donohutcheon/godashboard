@@ -1,3 +1,3 @@
 [submodule "static"]
 	path = static
-	url = https://github.com:donohutcheon/reactwebclient.git
+	url = https://github.com/donohutcheon/reactwebclient.git
