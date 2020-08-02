@@ -13,8 +13,8 @@ FROM node:alpine AS node_builder
 COPY --from=go_builder /go/src/static /static
 WORKDIR /static
 RUN npm install
-RUN npm run build
 RUN find . | grep -v "node_modules"
+RUN npm run build
 
 # Prepare final, minimal image
 FROM alpine:latest
