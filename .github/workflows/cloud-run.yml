@@ -1,58 +1,33 @@
-# Copyright 2019 Google, LLC.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-name: Build and Deploy to Cloud Run
-
+name: Deploy the application to Google Cloud Run
 on:
   push:
     branches:
-      - master
-
-# Environment variables available to all jobs and steps in this workflow
-env:
-  PROJECT_ID: ${{ secrets.PROJECT_ID }}
-  RUN_REGION: us-central1
-  SERVICE_NAME: super-simple-service
+      - 'master'
 
 jobs:
-  setup-build-deploy:
-    name: Setup, Build, and Deploy
+  deploy:
+    name: Deploy job
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout
+      - name: Checkout the repository
         uses: actions/checkout@v1
 
-      # Setup gcloud CLI
-      - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+      - name: Build Docker image
+        run: |
+          docker build . --tag eu.gcr.io/${{ secrets.GCLOUD_PROJECT }}/${{ secrets.GCLOUD_APP_NAME }}
+      - name: Authenticate into Google Cloud Platform
+        uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
         with:
-          version: '275.0.0'
-          service_account_email: ${{ secrets.SA_EMAIL }}
-          service_account_key: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS}}
+          service_account_email: ${{ secrets.GCLOUD_EMAIL }}
+          service_account_key: ${{ secrets.GCLOUD_AUTH }}
 
-      # Configure gcloud CLI
-      - name: gcloud Set up
+      - name: Configure Docker to use Google Cloud Platform
+        run: "gcloud auth configure-docker --quiet"
+
+      - name: Push image to Google Cloud Container Registry
+        run: docker push eu.gcr.io/${{ secrets.GCLOUD_PROJECT }}/${{ secrets.GCLOUD_APP_NAME }}
+
+      - name: Install beta commands and deploy on cloud run
         run: |
-          gcloud config set project $PROJECT_ID
-      # Build and push image to Google Container Registry
-      - name: Build
-        run: |
-          gcloud builds submit -t gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA
-      # Deploy image to Cloud Run
-      - name: Deploy
-        run: |
-          gcloud run deploy $SERVICE_NAME \
-            --region $RUN_REGION \
-            --image gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA \
-            --platform managed
+          gcloud components install beta --quiet
+          gcloud beta run deploy ${{ secrets.GCLOUD_APP_NAME }} --quiet --image eu.gcr.io/${{ secrets.GCLOUD_PROJECT }}/${{ secrets.GCLOUD_APP_NAME }} --project ${{ secrets.GCLOUD_PROJECT }} --region europe-west1 --platform managed
