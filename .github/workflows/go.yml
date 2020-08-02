@@ -19,6 +19,9 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v2
 
+      - name: Start MySQL
+        run: sudo /etc/init.d/mysql start
+
       - name: Run Unit tests.
         run: go test -short -coverprofile cover.out -covermode=atomic  ./...
       

@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"regexp"
 	"testing"
 	"time"
 
@@ -148,7 +149,7 @@ func TestGetCurrentUser(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			cl := new(http.Client)
 			//now := time.Now()
-			state := facotory.NewForTesting(t, callbacks)
+			state := facotory.NewForTesting(t, callbacks, seedUsers)
 			ctx := state.Context
 			gotAuthResp := login(t, ctx, cl, state.URL, test.authParameters)
 			getCurrentUser(t, ctx, cl, state.URL, gotAuthResp, &test.getCurrentUserParams)
@@ -221,8 +222,16 @@ func TestCreateUser(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			callbacks := state.NewMockCallbacks(mailCallback)
-			state := facotory.NewForTesting(t, callbacks)
+			var url string
+			callbacks := state.NewMockCallbacks(func (t *testing.T, ctx context.Context, to []string, from, subject, message string) {
+				mailCallback(t, ctx, to, from, subject, message)
+				t.Helper()
+				fmt.Println("mail callback: ", message)
+				re := regexp.MustCompile("https?://.*/users/confirm/[a-z0-9]+")
+				url = re.FindString(message)
+			})
+
+			state := facotory.NewForTesting(t, callbacks, seedUsers)
 			ctx := state.Context
 			cl := new(http.Client)
 
@@ -234,10 +243,31 @@ func TestCreateUser(t *testing.T) {
 			}
 
 			callbacks.MockMailWG.Wait()
+			t.Log("Got mail, lets login... ", url)
+			cli := new(http.Client)
+			resp, err := cli.Get(url)
+			require.NoError(t, err)
 
-			fmt.Println("Got mail, lets login...")
+			_, err = ioutil.ReadAll(resp.Body)
+			require.NoError(t, err)
 
 			login(t, ctx, cl, state.URL, test.authParameters)
 		})
 	}
+}
+
+func seedUsers(t *testing.T, dl datalayer.DataLayer) {
+	t.Helper()
+	id, err := dl.CreateUser("subzero@dreamrealm.com", "$2a$10$NkTUeL6hkTRZ7M13tKYLqOmg7pAQaGPdpch9b5UoTSoO77MHjbPjm")
+	require.NoError(t, err)
+	require.NotNil(t, id)
+	err = dl.SetUserStateByID(id, datalayer.UserStateConfirmed)
+	require.NoError(t, err)
+
+	id, err = dl.CreateUser("reptile@netherrealm.com", "$2a$10$NkTUeL6hkTRZ7M13tKYLqOmg7pAQaGPdpch9b5UoTSoO77MHjbPjm")
+	require.NotNil(t, id)
+	require.NoError(t, err)
+	user, err := dl.GetUserByEmail("reptile@netherrealm.com")
+	t.Log(user)
+	require.NoError(t, err)
 }

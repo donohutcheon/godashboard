@@ -9,10 +9,11 @@ import (
 type CallbackFunc func(T *testing.T, ctx context.Context, to []string, from, subject, message string)
 
 type MockClient struct {
-	T *testing.T
-	Context context.Context
+	T            *testing.T
+	Context      context.Context
 	CallbackFunc CallbackFunc
-	Group *sync.WaitGroup
+	Group        *sync.WaitGroup
+	Body         string
 }
 
 func New(client *MockClient) *MockClient {

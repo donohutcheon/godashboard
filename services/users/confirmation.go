@@ -3,6 +3,7 @@ package users
 import (
 	"fmt"
 	"github.com/donohutcheon/gowebserver/datalayer"
+	"github.com/donohutcheon/gowebserver/lib/nonce"
 	"github.com/donohutcheon/gowebserver/state"
 	"math/rand"
 	"time"
@@ -21,7 +22,7 @@ func ConfirmUsersForever(state *state.ServerState) {
 
 	for u := range state.Channels.ConfirmUsers {
 		logger.Printf("Received user to confirm from channel %s %s %s", u.Email.String, u.Password.String, u.State.String)
-		nonce := generateNonce(32)
+		confirmationNonce := nonce.GenerateNonce(32)
 
 		err := dl.SetUserStateByID(u.ID, datalayer.UserStateProcessing)
 		if err != nil {
@@ -29,9 +30,9 @@ func ConfirmUsersForever(state *state.ServerState) {
 			continue
 		}
 
-		nonceID, err := dl.CreateSignUpConfirmation(nonce, u.ID)
+		nonceID, err := dl.CreateSignUpConfirmation(confirmationNonce, u.ID)
 		if err != nil {
-			logger.Printf("failed to create sign-up confirmation for user %s %+v", u.Email.String, nonce)
+			logger.Printf("failed to create sign-up confirmation for user %s %+v", u.Email.String, confirmationNonce)
 			continue
 		}
 
@@ -39,7 +40,7 @@ func ConfirmUsersForever(state *state.ServerState) {
 		toList := []string{to}
 		from := "noreply@someapp.com"
 		message := fmt.Sprintf("Hello %s,\n Welcome to this app - whatever it is.  Please confirm your registration by clicking on this link " +
-		"%s/api/users/confirm/%s", u.Email.String, state.URL, nonce)
+		"%s/api/users/confirm/%s", u.Email.String, state.URL, confirmationNonce)
 
 		err = email.SendMail(toList, from, "Welcome to this app!", message)
 		if err != nil {
@@ -53,17 +54,7 @@ func ConfirmUsersForever(state *state.ServerState) {
 			continue
 		}
 
-		logger.Printf("Sent confirmation email for user %s with nonce %s nonceID %d", u.Email.String, nonce, nonceID)
+		logger.Printf("Sent confirmation email for user %s with confirmationNonce %s nonceID %d", u.Email.String, confirmationNonce, nonceID)
 	}
-	logger.Print("ConfirmUsersForever done.")
-}
-
-func generateNonce(n int) string {
-	const chars = "abcdefghijklmnopqrstuvwxyz01234567890"
-
-	b := make([]byte, n)
-	for i := range b {
-		b[i] = chars[rand.Intn(len(chars))]
-	}
-	return string(b)
+	logger.Print("ConfirmUsersForever done")
 }

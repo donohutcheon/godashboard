@@ -107,6 +107,7 @@ func ConfirmUserSignUp(w http.ResponseWriter, r *http.Request, state *state.Serv
 		return err
 	}
 
+	// TODO: Do redirect instead.
 	resp := response.New(true, "User's email has been confirmed")
 
 	return resp.Respond(w)

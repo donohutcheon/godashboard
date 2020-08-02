@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"database/sql"
+	_ "database/sql"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
@@ -120,7 +121,6 @@ func TestCardTransactions(t *testing.T) {
 					CardTransactions: []models.CardTransaction{
 						{
 							Model: datalayer.Model{
-								ID: 0,
 								CreatedAt: datalayer.JsonNullTime{
 									NullTime: sql.NullTime{
 										Time:  testTime,
@@ -180,9 +180,8 @@ func TestCardTransactions(t *testing.T) {
 
 			callbacks := state.NewMockCallbacks(mailCallback)
 
-			state := facotory.NewForTesting(t, callbacks)
+			state := facotory.NewForTesting(t, callbacks, seedUsers)
 			ctx := state.Context
-
 			gotAuthResp := login(t, ctx, cl, state.URL, test.authParameters)
 			createCardTransaction(t, ctx, cl, state.URL, gotAuthResp, &test.createCardTransactionParams)
 			getCardTransactions(t, ctx, cl, state.URL, gotAuthResp, &test.getCardTransactionParams)
@@ -222,6 +221,7 @@ func createCardTransaction(t *testing.T, ctx context.Context, cl *http.Client,
 
 func getCardTransactions(t *testing.T, ctx context.Context, cl *http.Client,
 	url string, auth *AuthResponse, params *GetCardTransactionParameters) {
+	t.Helper()
 	if params.skip {
 		return
 	}
@@ -243,9 +243,15 @@ func getCardTransactions(t *testing.T, ctx context.Context, cl *http.Client,
 	assert.Equal(t, params.expResponse.Message, gotResp.Message)
 	require.Equal(t, len(params.expResponse.CardTransactions), len(gotResp.CardTransactions))
 	for i, x := range params.expResponse.CardTransactions {
-		// Negate datetime fields we can't control.
+		gotTransaction := &gotResp.CardTransactions[i]
+		// Negate id and datetime fields we can't control.
+		x.ID = 0
 		x.CreatedAt = datalayer.JsonNullTime{}
-		gotResp.CardTransactions[i].CreatedAt = datalayer.JsonNullTime{}
+		x.DateTime = time.Time{}
+
+		gotTransaction.ID = 0
+		gotTransaction.CreatedAt = datalayer.JsonNullTime{}
+		gotTransaction.DateTime = time.Time{}
 
 		assert.Equal(t, x, gotResp.CardTransactions[i])
 	}

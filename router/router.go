@@ -59,10 +59,12 @@ func (h *Handlers) WrapMiddlewareFunc(next routes.MiddlewareFunc, registry map[s
 }
 
 //SetupRoutes add home route to mux
-func (h *Handlers) SetupRoutes(router *mux.Router) error {
-	err := writeStaticWebConfig()
-	if err != nil {
-		return err
+func (h *Handlers) SetupRoutes(router *mux.Router, options ...func() error) error {
+	for _, option := range options {
+		err := option()
+		if err != nil {
+			return err
+		}
 	}
 
 	registry := routes.GetRouteRegistry()
@@ -265,7 +267,7 @@ func (h *Handlers) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	http.FileServer(http.Dir(staticPath)).ServeHTTP(w, r)
 }
 
-func writeStaticWebConfig() error {
+func WithStaticWebConfig() error {
 	apiURL := os.Getenv("API_URL")
 	if len(apiURL) == 0 {
 		return nil

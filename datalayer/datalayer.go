@@ -23,11 +23,6 @@ type DataLayer interface {
 	GetUnconfirmedUsers() ([]User, error)
 	SetUserStateByID(id int64, state UserState) error
 
-	// Contacts
-	CreateContact(name, phone string, userID int64) (int64, error)
-	GetContactByID(id int64) (*Contact, error)
-	GetContactsByUserID(userID int64) ([]*Contact, error)
-
 	// Transactions
 	CreateCardTransaction(*CardTransaction) (int64, error)
 	GetCardTransactionByID(id int64) (*CardTransaction, error)

@@ -2,8 +2,8 @@ package facotory
 
 import (
 	"context"
+	"fmt"
 	"github.com/donohutcheon/gowebserver/datalayer"
-	"github.com/donohutcheon/gowebserver/datalayer/mockdatalayer"
 	"github.com/donohutcheon/gowebserver/provider/mail"
 	"github.com/donohutcheon/gowebserver/provider/mail/mailtrap"
 	"github.com/donohutcheon/gowebserver/provider/mail/mockmail"
@@ -12,12 +12,15 @@ import (
 	"github.com/donohutcheon/gowebserver/services"
 	"github.com/donohutcheon/gowebserver/state"
 	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
 	"github.com/stretchr/testify/require"
 	"log"
 	"net"
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
+	"runtime"
 	"strings"
 	"sync"
 	"syscall"
@@ -85,10 +88,20 @@ func NewForStaging(logger *log.Logger, mainThreadWG *sync.WaitGroup) (*state.Ser
 	return s, nil
 }
 
-func NewForTesting(t *testing.T, callbacks *state.MockCallbacks) *state.ServerState {
+type SeedFunction func(t *testing.T, layer datalayer.DataLayer)
+
+func NewForTesting(t *testing.T, callbacks *state.MockCallbacks, seedFunctions ...SeedFunction) *state.ServerState {
+	t.Helper()
 	logger := log.New(os.Stdout, "microservice", log.LstdFlags|log.Lshortfile)
+
+	_, b, _, _ := runtime.Caller(0)
+	envFile := fmt.Sprintf("%s/../../.env", filepath.Dir(b))
+	err := godotenv.Load(envFile)
+	require.NoError(t, err)
+
 	ctx := context.Background()
-	mockDataLayer := mockdatalayer.New(t)
+	mockDataLayer, err := datalayer.NewForTesting(t, ctx)
+	require.NoError(t, err)
 
 	mail := &mockmail.MockClient{
 		T:            t,
@@ -113,7 +126,7 @@ func NewForTesting(t *testing.T, callbacks *state.MockCallbacks) *state.ServerSt
 	}
 
 	h := router.NewHandlers(state)
-	err := h.SetupRoutes(r)
+	err = h.SetupRoutes(r)
 	require.NoError(t, err)
 
 	srv := server.New(r, "", "0")
@@ -124,8 +137,12 @@ func NewForTesting(t *testing.T, callbacks *state.MockCallbacks) *state.ServerSt
 	go func() {
 		err := srv.Serve(l)
 		require.NoError(t, err)
-	} ()
+	}()
 	state.URL = "http://" + strings.Replace(l.Addr().String(), "[::]", "localhost", 1)
+
+	for _, seedFunc := range seedFunctions {
+		seedFunc(t, state.DataLayer)
+	}
 
 	return state
 }
@@ -136,8 +153,8 @@ func runServer(state *state.ServerState, mainThreadWG *sync.WaitGroup) {
 	logger := state.Logger
 	h := router.NewHandlers(state)
 
-	router := state.Router
-	err := h.SetupRoutes(router)
+	rtr := state.Router
+	err := h.SetupRoutes(rtr, router.WithStaticWebConfig)
 	if err != nil {
 		logger.Fatalf("Could not start router %s", err.Error())
 	}
@@ -146,7 +163,7 @@ func runServer(state *state.ServerState, mainThreadWG *sync.WaitGroup) {
 	bindAddress := os.Getenv("BIND_ADDRESS")
 	port        := os.Getenv("PORT")
 	logger.Printf("Server Binding to %s:%s", bindAddress, port)
-	srv := server.New(router, bindAddress, port)
+	srv := server.New(rtr, bindAddress, port)
 
 	go func() {
 		// TODO: Put back in for TLS

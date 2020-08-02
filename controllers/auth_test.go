@@ -70,14 +70,12 @@ func TestAuthenticate(t *testing.T) {
 		},
 	}
 
-	callbacks := state.NewMockCallbacks(mailCallback)
-
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			now := time.Now()
-			state := facotory.NewForTesting(t, callbacks)
+			callbacks := state.NewMockCallbacks(mailCallback)
+			state := facotory.NewForTesting(t, callbacks, seedUsers)
 			ctx := state.Context
-
 			req, err := http.NewRequestWithContext(ctx, http.MethodPost, state.URL+"/api/auth/login", nil)
 			assert.NoError(t, err)
 
@@ -120,6 +118,7 @@ type RefreshTokenParameters struct {
 }
 
 func login(t *testing.T, ctx context.Context, cl *http.Client, url string, params AuthParameters) *AuthResponse {
+	t.Helper()
 	testTime := time.Now()
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url+"/api/auth/login", nil)
@@ -153,6 +152,7 @@ func login(t *testing.T, ctx context.Context, cl *http.Client, url string, param
 }
 
 func refreshToken(t *testing.T, ctx context.Context, cl *http.Client, url string, params RefreshTokenParameters) *AuthResponse {
+	t.Helper()
 	testTime := time.Now()
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url+"/api/auth/refresh", nil)
 	assert.NoError(t, err)
@@ -220,7 +220,7 @@ func TestRefreshToken(t *testing.T) {
 			cl := new(http.Client)
 
 			callbacks := state.NewMockCallbacks(mailCallback)
-			state := facotory.NewForTesting(t, callbacks)
+			state := facotory.NewForTesting(t, callbacks, seedUsers)
 
 			gotAuthResp := login(t, ctx, cl, state.URL, test.authParams)
 			test.refreshTokenParams.request.RefreshToken = gotAuthResp.Token.RefreshToken

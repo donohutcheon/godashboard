@@ -31,7 +31,7 @@ type ServerState struct {
 }
 
 type MockCallbacks struct {
-	MockMail mockmail.CallbackFunc
+	MockMail   mockmail.CallbackFunc
 	MockMailWG *sync.WaitGroup
 }
 
