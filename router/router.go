@@ -58,6 +58,7 @@ func (h *Handlers) WrapMiddlewareFunc(next routes.MiddlewareFunc, registry map[s
 	}
 }
 
+
 //SetupRoutes add home route to mux
 func (h *Handlers) SetupRoutes(router *mux.Router, options ...func() error) error {
 	for _, option := range options {

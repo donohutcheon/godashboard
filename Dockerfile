@@ -1,31 +1,30 @@
-FROM golang:stable as build
+FROM golang:alpine as go_builder
 
-COPY . /app
-WORKDIR /app
+RUN pwd
+WORKDIR /go/src/
+COPY . /go/src/
 
-# Setup buildpack
-RUN mkdir -p /tmp/buildpack/heroku/go /tmp/build_cache /tmp/env
-RUN curl https://codon-buildpacks.s3.amazonaws.com/buildpacks/heroku/go.tgz | tar xz -C /tmp/buildpack/heroku/go
-
-#Execute Buildpack
-RUN STACK=heroku-18 /tmp/buildpack/heroku/go/bin/compile /app /tmp/build_cache /tmp/env
+RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o bin/godashboard main.go
+RUN find . -name "godashboard"
 
 # Build the React application
 FROM node:alpine AS node_builder
 
-COPY --from=build /app/static /static
+COPY --from=go_builder /go/src/static /static
 WORKDIR /static
 RUN npm install
 RUN npm run build
+RUN find . | grep -v "node_modules"
 
 # Prepare final, minimal image
-FROM heroku/heroku:18
-COPY --from=build /app /app
+FROM alpine:latest
+WORKDIR /app
+RUN mkdir -p /app/static/
+
+COPY --from=go_builder /go/src/bin/ /app
 COPY --from=node_builder /static/build /app/static/build
 
 # Install
 ENV HOME /app
-WORKDIR /app
-RUN useradd -m heroku
-USER heroku
-CMD /app/bin/gowebserver
+
+CMD ["./godashboard"]

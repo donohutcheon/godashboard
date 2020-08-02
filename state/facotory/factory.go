@@ -36,7 +36,7 @@ const (
 )
 
 func newState(env environment, logger *log.Logger, mainThreadWG *sync.WaitGroup) (*state.ServerState, error) {
-	dataLayer, err := datalayer.New()
+	dataLayer, err := datalayer.New(logger)
 	if err != nil {
 		return nil, err
 	}

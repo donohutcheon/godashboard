@@ -1,13 +1,14 @@
 package main
 
 import (
+	"log"
+	"os"
+	"sync"
+
 	"github.com/donohutcheon/gowebserver/state"
 	"github.com/donohutcheon/gowebserver/state/facotory"
 	_ "github.com/heroku/x/hmetrics/onload"
 	"github.com/joho/godotenv"
-	"log"
-	"os"
-	"sync"
 )
 
 func main() {

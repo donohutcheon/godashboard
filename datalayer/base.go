@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/DATA-DOG/go-txdb"
 	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -86,12 +87,10 @@ func NewForTesting(t *testing.T, ctx context.Context) (*PersistenceDataLayer, er
 	}, nil
 }
 
-func New() (*PersistenceDataLayer, error){
+func New(logger *log.Logger) (*PersistenceDataLayer, error){
 	conn, err, ok := tryConnectHerokuJawsDB()
 	if err != nil {
-		// TODO: Use proper logger
-		fmt.Printf("Could not connect to JawsDB. %s", err.Error())
-		return nil, err
+		logger.Printf("Could not connect to JawsDB. Continuing... (%s)", err.Error())
 	} else if ok {
 		return &PersistenceDataLayer{
 			conn: conn,
@@ -104,7 +103,7 @@ func New() (*PersistenceDataLayer, error){
 	dbHost := os.Getenv("db_host")
 	dbPort := os.Getenv("db_port")
 
-	conn, err = createCon("mysql", username, password, dbHost, dbPort, dbName)
+	conn, err = createCon(logger, "mysql", username, password, dbHost, dbPort, dbName)
 	if err != nil {
 		fmt.Print(err)
 		return nil, err
@@ -119,19 +118,21 @@ func (p *PersistenceDataLayer) GetConn() *sqlx.DB {
 }
 
 /*Create mysql connection*/
-func createCon(driverName string, username string, password string, dbHost string, dbPort string, dbName string) (db *sqlx.DB, err error) {
+func createCon(logger *log.Logger, driverName string, username string, password string, dbHost string, dbPort string, dbName string) (db *sqlx.DB, err error) {
 	dbURI := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true", username, password, dbHost, dbPort, dbName)
 	db, err = sqlx.Open(driverName, dbURI)
 	if err != nil {
-		fmt.Println(err.Error())
-	} else {
-		fmt.Println("database is connected")
+		logger.Println("Could not open database connection to: ", dbURI, err.Error())
+		return nil, err
 	}
+	logger.Println("database is connected: ", dbURI)
+
 
 	// make sure connection is available
 	err = db.Ping()
 	if err != nil {
-		fmt.Printf("MySQL datalayer is not connected %s", err.Error())
+		logger.Printf("MySQL datalayer is not connected %s", err.Error())
+		return nil, err
 	}
 	return db, err
 }
