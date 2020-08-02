@@ -96,8 +96,7 @@ func NewForTesting(t *testing.T, callbacks *state.MockCallbacks, seedFunctions .
 
 	_, b, _, _ := runtime.Caller(0)
 	envFile := fmt.Sprintf("%s/../../.env", filepath.Dir(b))
-	err := godotenv.Load(envFile)
-	require.NoError(t, err)
+	godotenv.Load(envFile)
 
 	ctx := context.Background()
 	mockDataLayer, err := datalayer.NewForTesting(t, ctx)
