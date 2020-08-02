@@ -12,7 +12,7 @@ FROM node:alpine AS node_builder
 
 COPY --from=go_builder /go/src/static /static
 WORKDIR /static
-RUN npm install
+RUN npm install --production
 RUN npm run build
 RUN find . | grep -v "node_modules"
 
