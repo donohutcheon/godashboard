@@ -25,12 +25,12 @@ jobs:
           service_account_key: ${{ secrets.GCLOUD_AUTH }}
 
       - name: Configure Docker to use Google Cloud Platform
-        run: "gcloud auth configure-docker --quiet"
+        run: "gcloud auth configure-docker"
 
       - name: Push image to Google Cloud Container Registry
         run: docker push eu.gcr.io/${{ secrets.GCLOUD_PROJECT }}/${{ secrets.GCLOUD_APP_NAME }}
 
       - name: Install beta commands and deploy on cloud run
         run: |
-          gcloud components install beta --quiet
+          gcloud components install --quiet
           gcloud run deploy ${{ secrets.GCLOUD_APP_NAME }} --image eu.gcr.io/${{ secrets.GCLOUD_PROJECT }}/${{ secrets.GCLOUD_APP_NAME }} --project ${{ secrets.GCLOUD_PROJECT }} --region europe-west1 --platform managed
